@@ -15,7 +15,7 @@ This is simple as it looks. Using the **‘New-SelfSignedCertificate’** cmdlet
 
 ```powershell
     New-SelfSignedCertificate `
-      -DnsName "localhost", "127.0.0.1", "::1" `
+      -DnsName "wutang.local", "127.0.0.1", "::1" `
       -CertStoreLocation "cert:\LocalMachine\My" `
       -FriendlyName "Local Dev HTTPS - Self-Signed" `
       -NotAfter (Get-Date).AddYears(5) `
