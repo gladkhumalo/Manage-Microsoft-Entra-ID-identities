@@ -19,7 +19,7 @@ Self-signed certificates are useful for development, testing, internal services,
 ## 1. Create Your Own SSL Certificate using PowerShell
 This is simple as it looks. Using the **‘New-SelfSignedCertificate’** cmdlet, you can create self-signed certificate in a jiffy.
 
-![Markdown Logo](./assets/sample-cert.png)
+![Create SSL Cert](./assets/sample-cert.jpg)
 
 ```powershell
     New-SelfSignedCertificate `
