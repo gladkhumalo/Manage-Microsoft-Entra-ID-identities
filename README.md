@@ -19,8 +19,6 @@ Self-signed certificates are useful for development, testing, internal services,
 ## 1. Create Your Own SSL Certificate using PowerShell
 This is simple as it looks. Using the **‘New-SelfSignedCertificate’** cmdlet, you can create self-signed certificate in a jiffy.
 
-![Create SSL Cert](./assets/sample-cert.jpg)
-
 ```powershell
     New-SelfSignedCertificate `
       -DnsName "wutang.local", "127.0.0.1", "::1" `
@@ -31,6 +29,9 @@ This is simple as it looks. Using the **‘New-SelfSignedCertificate’** cmdlet
       -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
       -HashAlgorithm SHA256
 ```
+
+![Create SSL Cert](./assets/sample-cert.jpg)
+
 This command creates a self-signed SSL/TLS certificate for local HTTPS development. Here's a breakdown of each parameter:
 * ```New-SelfSignedCertificate``` — The cmdlet that generates the certificate.
 * ```-DnsName "localhost", "127.0.0.1", "::1"``` — Adds Subject Alternative Names (SANs) to the certificate, so it's valid for all three common ways to refer to your local machine: hostname, IPv4 loopback, and IPv6 loopback.
