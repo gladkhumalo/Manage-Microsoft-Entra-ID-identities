@@ -60,5 +60,5 @@ Self-signed certs cause "not secure" warnings by default. To trust it only on yo
     4. **Double-click the .cer file → Install Certificate → Local Machine → Place all certificates in: Trusted Root Certification Authorities.**
 
 ![MMC Console](./assets/Export.png)
-![MMC Console](./assets/Export 2.png)
-![MMC Console](./assets/mmc.jpg)
+![MMC Console](./assets/Export-2.png)
+![MMC Console](./assets/Export-3.png)
