@@ -54,7 +54,7 @@ Or open the certificate MMC snap-in:
 
 ## Step 2. Trust it locally (remove browser warnings on your machine)
 Self-signed certs cause "not secure" warnings by default. To trust it only on your PC: <br>
-    1. Open **certmgr.msc** (or mmc → Add Snap-in → Certificates → Computer account).
-    2. Go to **Personal** > **Certificates**, find your new cert.
-    3. **Right-click → All Tasks → Export → Export without private key → DER encoded binary X.509 (.cer).**
+    1. Open **certmgr.msc** (or mmc → Add Snap-in → Certificates → Computer account). <br>
+    2. Go to **Personal** > **Certificates**, find your new cert. <br>
+    3. **Right-click → All Tasks → Export → Export without private key → DER encoded binary X.509 (.cer).** <br>
     4. **Double-click the .cer file → Install Certificate → Local Machine → Place all certificates in: Trusted Root Certification Authorities.**
