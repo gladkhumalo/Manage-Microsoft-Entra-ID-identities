@@ -66,8 +66,8 @@ Self-signed certs cause "not secure" warnings by default. To trust it only on yo
 ## Step 3: Trust the Certificate Locally (remove browser warnings)
 Easiest way (using the .cer file from Step 2)
     1. Double-click localhost-root.cer
-2. Click **Install Certificate**
-3. Choose **Local Machine → Next**
-4. Place all certificates in the following **store → Browse → Trusted Root Certification Authorities → OK**
-5. **Next → Finish**
-6. Click **Yes** on the security warning
+    2. Click **Install Certificate**
+    3. Choose **Local Machine → Next**
+    4. Place all certificates in the following **store → Browse → Trusted Root Certification Authorities → OK**
+    5. **Next → Finish**
+    6. Click **Yes** on the security warning
