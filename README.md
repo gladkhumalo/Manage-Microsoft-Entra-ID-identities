@@ -53,7 +53,7 @@ Or open the certificate MMC snap-in:
 ![MMC Console](./assets/mmc.jpg)
 
 ## Step 2. Trust it locally (remove browser warnings on your machine)
-Self-signed certs cause "not secure" warnings by default. To trust it only on your PC: <br>
+### Self-signed certs cause "not secure" warnings by default. To trust it only on your PC: <br>
     1. Open **certmgr.msc** (or mmc → Add Snap-in → Certificates → Computer account). <br>
     2. Go to **Personal** > **Certificates**, find your new cert. <br>
     3. **Right-click → All Tasks → Export → Export without private key → DER encoded binary X.509 (.cer).** <br>
@@ -64,10 +64,21 @@ Self-signed certs cause "not secure" warnings by default. To trust it only on yo
 ![MMC Console](./assets/Export-3.png)
 
 ## Step 3: Trust the Certificate Locally (remove browser warnings)
-Easiest way (using the .cer file from Step 2)
-    1. Double-click localhost-root.cer** <br>
+### Easiest way (using the .cer file from Step 2)
+    1. Double-click **mycert.cer** <br>
     2. Click **Install Certificate** <br>
     3. Choose **Local Machine → Next** <br>
     4. Place all certificates in the following **store → Browse → Trusted Root Certification Authorities → OK** <br>
     5. **Next → Finish** <br>
     6. Click **Yes** on the security warning
+
+### Alternative: Pure PowerShell way
+```powershell
+$cert = Get-ChildItem -Path cert:\LocalMachine\My | 
+        Where-Object { $_.FriendlyName -like "*Local Dev HTTPS*" } | 
+        Select-Object -First 1
+
+Export-Certificate -Cert $cert -FilePath "C:\temp\localhost-root.cer"
+
+Import-Certificate -FilePath "C:\temp\localhost-root.cer" -CertStoreLocation cert:\LocalMachine\Root
+```
