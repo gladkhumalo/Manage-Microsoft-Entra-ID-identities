@@ -1,90 +1,122 @@
-## 🔐 How to Create Self-signed Certificate using PowerShell
-As an administrator, ensuring secure communication over networks is a top priority. One way to achieve this is by using secure certificates. While CA-signed certificates (issued by a trusted third-party organization) provide a high level of security, they can be expensive and may not be necessary for all use cases. In such scenarios, a self-signed public certificate can serve cost-effective and convenient alternative.
+# Create a self-signed certificate with PowerShell
 
-Self-signed certificates are perfect for testing purposes and provide a secure solution for administrators who require a certificate-based solution. With just a single PowerShell cmdlet, you can easily create an SSL certificate that fits your needs and requirements.
+This lab shows how to create, inspect, export, trust, and remove a self-signed TLS certificate on Windows.
 
-This repository provides guidance on creating, exporting, and using self-signed certificates on Windows using PowerShell. 
-Self-signed certificates are useful for development, testing, internal services, or lab environments.
+> [!WARNING]
+> Use this process only for local development or an isolated lab. A self-signed certificate is not publicly trusted, and importing it into a trusted root store makes your computer trust that certificate. Production services should use certificates issued through an appropriate public or organizational certificate authority. Never share or commit a private key.
 
-### 📋 Prerequisites
-* Windows 10 or higher / Windows Server 2016 or higher
-* PowerShell (run as Administrator)
-* Basic understanding of certificates
+## Prerequisites
 
-## Step 1: Open PowerShell as Administrator
-1. Click Start
-2. Search for PowerShell
-3. Right-click → Run as Administrator
+- Windows 10, Windows 11, or Windows Server 2016+
+- Windows PowerShell 5.1 or PowerShell 7
+- An elevated PowerShell session
+- Basic familiarity with TLS certificates
 
-### 1. Create Your Own SSL Certificate using PowerShell
-This is simple as it looks. Using the **‘New-SelfSignedCertificate’** cmdlet, you can create self-signed certificate in a jiffy.
+## 1. Create the certificate
+
+Open PowerShell as Administrator and run:
 
 ```powershell
-    New-SelfSignedCertificate `
-      -DnsName "wutang.local", "127.0.0.1", "::1" `
-      -CertStoreLocation "cert:\LocalMachine\My" `
-      -FriendlyName "Local Dev HTTPS - Self-Signed" `
-      -NotAfter (Get-Date).AddYears(5) `
-      -KeyUsage DigitalSignature,KeyEncipherment `
-      -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
-      -HashAlgorithm SHA256
+$certificate = New-SelfSignedCertificate `
+    -DnsName "localhost", "127.0.0.1", "::1" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -FriendlyName "Local Dev HTTPS - Self-Signed" `
+    -NotAfter (Get-Date).AddYears(1) `
+    -KeyUsage DigitalSignature, KeyEncipherment `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
+    -HashAlgorithm SHA256
+
+$certificate | Format-List Subject, Thumbprint, NotBefore, NotAfter
 ```
 
-![Create SSL Cert](./assets/sample-cert.jpg)
+The DNS names become Subject Alternative Names (SANs). Replace them with the exact development hostnames you will use. The Server Authentication extended key usage identifies the certificate as suitable for TLS server authentication.
 
-This command creates a self-signed SSL/TLS certificate for local HTTPS development. Here's a breakdown of each parameter:
-* ```New-SelfSignedCertificate``` — The cmdlet that generates the certificate.
-* ```-DnsName "localhost", "127.0.0.1", "::1"``` — Adds Subject Alternative Names (SANs) to the certificate, so it's valid for all three common ways to refer to your local machine: hostname, IPv4 loopback, and IPv6 loopback.
-* ```CertStoreLocation "cert:\LocalMachine\My"``` — Installs the certificate into the Windows Certificate Store under Local Machine → Personal. This makes it available system-wide, not just for the current user.
-* ```-FriendlyName "Local Dev HTTPS - Self-Signed"``` — A human-readable label so you can easily identify it in the certificate manager (certmgr.msc).
-* ```-NotAfter (Get-Date).AddYears(5)``` — Sets the expiry date to 5 years from now instead of the default 1 year.
-* ```-KeyUsage DigitalSignature, KeyEncipherment``` — Restricts what the certificate's private key can be used for — signing data and encrypting key exchange, which are exactly what HTTPS (TLS) needs.
-* ```-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1")``` — Sets the Extended Key Usage (EKU) to Server Authentication (OID 1.3.6.1.5.5.7.3.1), explicitly marking this as a server certificate used for TLS — required by modern browsers to trust it for HTTPS.
-* ``` -HashAlgorithm SHA256``` - Signs the certificate using SHA-256, which is the modern standard (SHA-1 is deprecated and rejected by browsers).
+![Certificate details](assets/sample-cert.jpg)
 
-### 2. After running the above command, you can then view the certificate:
+## 2. Inspect the certificate
+
+Use PowerShell:
+
 ```powershell
-    Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like "*Local*" }
+Get-ChildItem Cert:\LocalMachine\My |
+    Where-Object FriendlyName -eq "Local Dev HTTPS - Self-Signed" |
+    Format-List Subject, Thumbprint, NotAfter, HasPrivateKey
 ```
-Or open the certificate MMC snap-in:
+
+Or open the Local Computer certificate manager:
+
 ```powershell
-    certlm.msc
+certlm.msc
 ```
-![MMC Console](./assets/mmc.jpg)
 
-## Step 2. Trust it locally (remove browser warnings on your machine)
-### Self-signed certs cause "not secure" warnings by default. To trust it only on your PC: <br>
-    1. Open **certmgr.msc** (or mmc → Add Snap-in → Certificates → Computer account). <br>
-    2. Go to **Personal** > **Certificates**, find your new cert. <br>
-    3. **Right-click → All Tasks → Export → Export without private key → DER encoded binary X.509 (.cer).** <br>
-    4. **Double-click the .cer file → Install Certificate → Local Machine → Place all certificates in: Trusted Root Certification Authorities.**
+![Certificate Manager](assets/mmc.jpg)
 
-![MMC Console](./assets/Export.png)
-![MMC Console](./assets/Export-2.png)
-![MMC Console](./assets/Export-3.png)
+## 3. Export the public certificate
 
-## Step 3: Trust the Certificate Locally (remove browser warnings)
-### Easiest way (using the .cer file from Step 2)
-    1. Double-click **mycert.cer** <br>
-    2. Click **Install Certificate** <br>
-    3. Choose **Local Machine → Next** <br>
-    4. Place all certificates in the following **store → Browse → Trusted Root Certification Authorities → OK** <br>
-    5. **Next → Finish** <br>
-    6. Click **Yes** on the security warning
+Export only the public certificate. This `.cer` file does not contain the private key.
 
-### Alternative: Pure PowerShell way
 ```powershell
-$cert = Get-ChildItem -Path cert:\LocalMachine\My | 
-        Where-Object { $_.FriendlyName -like "*Local Dev HTTPS*" } | 
-        Select-Object -First 1
+$certificate = Get-ChildItem Cert:\LocalMachine\My |
+    Where-Object FriendlyName -eq "Local Dev HTTPS - Self-Signed" |
+    Select-Object -First 1
 
-Export-Certificate -Cert $cert -FilePath "C:\temp\localhost-root.cer"
+if (-not $certificate) {
+    throw "The lab certificate was not found."
+}
 
-Import-Certificate -FilePath "C:\temp\localhost-root.cer" -CertStoreLocation cert:\LocalMachine\Root
+Export-Certificate `
+    -Cert $certificate `
+    -FilePath "$env:TEMP\localhost-lab.cer"
 ```
-## Quick Tips & Troubleshooting
-* **Still seeing warnings?** Restart Chrome/Edge/Firefox completely (or run ```chrome://restart```)
-* Want a wildcard? Add ```-DnsName "*.localdev.com", "localdev.com"``` in Step 1
-* Need to remove it later? Just delete from ```certlm.msc```
-* For multiple machines? Export the ```.cer``` and import on each one
-* Want something even easier? Check out mkcert (one-command local CA)
+
+## 4. Trust it on this lab computer
+
+Importing the public certificate into the Local Computer trusted root store removes trust warnings for names included in the certificate, but only on this computer.
+
+```powershell
+Import-Certificate `
+    -FilePath "$env:TEMP\localhost-lab.cer" `
+    -CertStoreLocation "Cert:\LocalMachine\Root"
+```
+
+You can also double-click the `.cer` file, choose **Local Machine**, and place it in **Trusted Root Certification Authorities**.
+
+![Export certificate](assets/Export.png)
+![Export format](assets/Export-2.png)
+![Export result](assets/Export-3.png)
+
+## 5. Remove the lab certificate
+
+Remove the certificate from both stores when the lab is complete. Verify the displayed certificates before confirming the removal.
+
+```powershell
+$friendlyName = "Local Dev HTTPS - Self-Signed"
+
+Get-ChildItem Cert:\LocalMachine\My, Cert:\LocalMachine\Root |
+    Where-Object FriendlyName -eq $friendlyName |
+    Format-Table Subject, Thumbprint, PSParentPath
+
+# After checking the list above, uncomment the next command:
+# Get-ChildItem Cert:\LocalMachine\My, Cert:\LocalMachine\Root |
+#     Where-Object FriendlyName -eq $friendlyName |
+#     Remove-Item
+```
+
+## Troubleshooting
+
+- Restart the browser completely after changing certificate trust.
+- Ensure the URL hostname exactly matches one of the certificate's SANs.
+- Firefox may use a separate certificate trust store depending on its configuration.
+- If the private key is required by a service, configure that service to use the certificate from `LocalMachine\My`; do not export the key unnecessarily.
+- For convenient local development across several hostnames, consider a development CA tool such as `mkcert`.
+
+## Security notes
+
+- A self-signed certificate can encrypt traffic, but it does not provide public identity assurance.
+- Do not use a five-year lifetime for routine development certificates; shorter lifetimes reduce exposure.
+- Do not commit `.pfx`, `.p12`, private-key, password, or production certificate files.
+- Use a managed certificate service or approved organizational PKI in production.
+
+## License
+
+Licensed under the [MIT License](LICENSE).
